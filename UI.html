@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Easy Buy MILK-CUSTOMER UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      background: #f0f2f5;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; }
+    label, input { display: block; width: 100%; margin-top: 10px; }
+    input, select, textarea {
+      padding: 10px; margin-bottom: 15px;
+      border-radius: 5px; border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px; width: 100%;
+      background: #007bff; color: white;
+      border: none; border-radius: 6px;
+      font-size: 16px; cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    .message { margin: 10px 0; min-height: 20px; font-weight: bold; }
+    .message.error { color: #c00; }
+    .message.success { color: #0a0; }
+    .hidden { display: none; }
+    .link-row { display: flex; justify-content: space-between; margin-top: 10px; }
+    .link-row a { color: #007bff; text-decoration: none; font-size: 0.95rem; }
+    .link-row a:hover { text-decoration: underline; }
+    #user-section { background: transparent; padding: 10px; margin-top: 10px; }
+    #user-section button { padding: 5px 8px; font-size: 13px; border-radius: 4px; }
+    #searchInput { font-size: 13px; padding: 5px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px auto; text-align: center; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: center; vertical-align: middle; }
+    #logout-btn {
+      background: transparent; color: #dc3545;
+      margin-bottom: 1px; border: 1px solid #000bff; font-weight: bold;
+    }
+    #logout-btn:hover { background: rgba(100, 103, 69, 0.1); }
+    .export-btn {
+      background: transparent; color: #8c3545;
+      margin-bottom: 1px; border: 1px solid #8c3545; font-weight: bold;
+    }
+    .export-btn:hover { background: rgba(140, 53, 69, 0.1); }
+    .menu-btn {
+      background: transparent; color: #000bff;
+      margin-bottom: 1px; border: 1px solid #000bff; font-weight: bold;
+    }
+    .menu-btn:hover { background: rgba(100, 103, 69, 0.1); }
+    section { display: none; }
+    
+style>
+/* Smooth Milk-Themed UI */
+body {
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 40px auto;
+  background: linear-gradient(135deg, #f7fbff, #e6f7ff);
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Soft floating milk bubbles */
+body::before, body::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  background: rgba(255,255,255,0.55);
+  border-radius: 50%;
+  animation: floatBubble 8s infinite ease-in-out;
+  z-index: -1;
+}
+body::before {
+  top: -40px;
+  left: -40px;
+}
+body::after {
+  bottom: -40px;
+  right: -40px;
+  animation-delay: 2s;
+}
+@keyframes floatBubble {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.1); }
+}
+
+h2 {
+  text-align: center;
+  color: #005bbb;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+label, input {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+
+input, select, textarea {
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #b7d9ff;
+  box-sizing: border-box;
+  background: #ffffffcc;
+  backdrop-filter: blur(3px);
+  transition: 0.3s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0,123,255,0.4);
+}
+
+/* Milk button animation */
+button {
+  padding: 12px;
+  width: 100%;
+  background: #0099ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: 0.25s;
+}
+button:hover {
+  background: #0077dd;
+}
+button::after {
+  content: "";
+  position: absolute;
+  width: 120%;
+  height: 50px;
+  background: rgba(255,255,255,0.6);
+  top: -60px;
+  left: -10%;
+  transform: rotate(25deg);
+  transition: 0.5s;
+}
+button:hover::after {
+  top: 120%;
+}
+
+/* Messages */
+.message { margin: 10px 0; min-height: 20px; font-weight: bold; }
+.message.error { color: #d60000; }
+.message.success { color: #008f00; }
+.hidden { display: none; }
+
+.link-row { display: flex; justify-content: space-between; margin-top: 10px; }
+.link-row a { color: #007bff; text-decoration: none; font-size: 0.95rem; }
+.link-row a:hover { text-decoration: underline; }
+
+#user-section { background: transparent; padding: 10px; margin-top: 10px; }
+#user-section button { padding: 5px 8px; font-size: 13px; border-radius: 4px; }
+
+#searchInput { font-size: 13px; padding: 8px; border-radius: 6px; }
+
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 20px auto; text-align: center;
+  background: #ffffffaa; backdrop-filter: blur(3px);
+  border-radius: 8px;
+  overflow: hidden;
+}
+th, td {
+  padding: 12px;
+  border: 1px solid #d0e7ff;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#logout-btn {
+  background: transparent; color: #dc3545;
+  margin-bottom: 1px; border: 1px solid #000bff; font-weight: bold;
+}
+#logout-btn:hover { background: rgba(100, 103, 69, 0.1); }
+
+.export-btn {
+  background: transparent; color: #8c3545;
+  margin-bottom: 1px; border: 1px solid #8c3545; font-weight: bold;
+}
+.export-btn:hover { background: rgba(140, 53, 69, 0.1); }
+
+.menu-btn {
+  background: transparent; color: #000bff;
+  margin-bottom: 1px; border: 1px solid #000bff; font-weight: bold;
+}
+.menu-btn:hover { background: rgba(100, 103, 69, 0.1); }
+
+section { display: none; }
+/* Animated Milk Title (Easy Buy MILK) */
+.milk-title {
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  color: #007bff;
+  position: relative;
+  animation: milkFloat 3s ease-in-out infinite;
+  background: linear-gradient(90deg, #007bff, #ca4dff, #007bff);
+   -webkit-background-clip: text;
+  color: transparent;
+  background-size: 200%;
+  animation: shine 3s linear infinite, milkFloat 3s ease-in-out infinite;
+}
+
+/* Shine animation inside letters */
+@keyframes shine {
+  0% { background-position: 200%; }
+  100% { background-position: -200%; }
+}
+/* Soft floating animation */
+@keyframes milkFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+</style>
+</head>
+<body>
+  </style>
+</head>
+<body>
+
+<h2 class="milk-title">Easy Buy MILK</h2>
+
+<div class="message" id="message"></div>
+<div id="auth-forms">
+  <!-- Login Form -->
+  <div id="login-form">
+    <input type="email" id="email" placeholder="EmailId/MobileNumber/UserName" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">🔑 Login</button>
+    <div class="link-row">
+      <a href="#" onclick="showForm('signup-form')">Create account</a>
+      <a href="#" onclick="showForm('forgot-form')">Forgot Password</a>
+    </div>
+  </div>
+
+  <!-- Signup Form -->
+  <div id="signup-form" class="hidden">
+    <input type="email" id="signup-email" placeholder="EmailId" />
+    <input type="password" id="signup-password" placeholder="Password" />
+    <button onclick="signup()">📝 Signup</button>
+    <p><a href="#" onclick="showForm('login-form')">← Back to Login</a></p>
+  </div>
+  
+  <!-- Forgot Password Form -->
+  <div id="forgot-form" class="hidden">
+    <input type="email" id="forgot-email" placeholder="EmailId" />
+    <button onclick="forgotPassword()">📩 forgot password</button>
+    <p><a href="#" onclick="showForm('login-form')">← Back to Login</a></p>
+  </div>
+  
+  <!-- Reset Password Form -->
+  <div id="reset-form" class="hidden">
+    <input type="email" id="reset-email" placeholder="EmailId" readonly />
+    <input type="text" id="reset-token" placeholder="Token" />
+    <input type="password" id="reset-password" placeholder="New Password" />
+    <button onclick="resetPassword()">🔁🔒 Reset password</button>
+  </div>
+</div>
+
+<div id="user-section" class="hidden">
+  <!-- Menu -->
+  <nav style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <button class="menu-btn" onclick="showSection('order-form')">New Order</button>
+    <button class="menu-btn" onclick="showSection('orders')">Orders</button>
+    <button class="menu-btn" onclick="showSection('profile')">Profile</button>
+    <button id="logout-btn" onclick="logout()">Logout</button>
+  </nav>
+
+<!-- USERS -->
+<div id="users" class="section">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <button class="export-btn" onclick="exportToExcel('users')">📊 Excel</button>
+    <button class="export-btn" onclick="exportToCSV('users')">📄 CSV</button>
+    <button class="export-btn" onclick="exportToPDF('users')">📕 PDF</button>
+    <input type="text" id="searchInputUsers" placeholder="Filter Users..." oninput="filterTable('users')" style="flex-grow: 1; min-width: 150px; padding: 5px;" />
+  </div>
+  <table id="userTable"><thead><tr id="tableHeaderUsers"></tr></thead><tbody id="tableBodyUsers"></tbody></table>
+</div>
+
+<!-- Order History -->
+<div id="history" class="section">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <button class="export-btn" onclick="exportToExcel('history')">📊 Excel</button>
+    <button class="export-btn" onclick="exportToCSV('history')">📄 CSV</button>
+    <button class="export-btn" onclick="exportToPDF('history')">📕 PDF</button>
+    <input type="text" id="searchInputHistory" placeholder="Filter History..." oninput="filterTable('history')" style="flex-grow: 1; min-width: 150px; padding: 5px;" />
+  </div>
+  <table id="historyTable"><thead><tr id="tableHeaderHistory"></tr></thead><tbody id="tableBodyHistory"></tbody></table>
+</div>
+
+<!-- Orders -->
+<div id="orders" class="section">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+    <button class="export-btn" onclick="exportToExcel('orders')">📊 Excel</button>
+    <button class="export-btn" onclick="exportToCSV('orders')">📄 CSV</button>
+    <button class="export-btn" onclick="exportToPDF('orders')">📕 PDF</button>
+    <input type="text" id="searchInputOrders" placeholder="Filter orders..." 
+           oninput="filterTable('orders')" 
+           style="flex-grow: 1; min-width: 150px; padding: 5px;" />
+  </div>
+  <table id="ordersTable" 
+         style="width: 100%; margin-top: 5px; border-collapse: collapse;">
+    <thead><tr id="tableHeaderOrders"></tr></thead>
+    <tbody id="tableBodyOrders"></tbody>
+  </table>
+</div>
+
+<!-- Order Form -->
+<div id="order-form" class="hidden" style="max-width: 400px; margin: auto;">
+  <!-- Quantity + Amount + Payment in same row -->
+  <div style="display: flex;">
+    <div style="flex: 1;">
+      <label for="quantity">Quantity</label>
+      <select id="quantity" required onchange="updateAmount()" style="width: 80%;">
+        <option value="">-- Select Quantity --</option>
+        <option value="100mL">100 mL</option>
+        <option value="250mL">250 mL</option>
+        <option value="500mL">500 mL</option>
+        <option value="1L">1 L</option>
+        <option value="2L">2 L</option>
+        <option value="3L">3 L</option>
+        <option value="5L">5 L</option>
+        <option value="FREE">Free Entry</option>
+      </select>
+      <!-- Free entry input (hidden by default) -->
+      <input 
+        type="number" 
+        id="freeQuantity" 
+        placeholder="Enter Qty (In Liters)" 
+        style="width: 80%; margin-top: 10px; display: none;" 
+        oninput="updateAmount()" />
+    </div>
+<!-- Smaller amount field -->
+    <div style="flex: 1;">
+      <label for="amount">Amount (₹)</label>
+	  <input type="text" id="amount" readonly 
+        style="width: 40%; height: 16px; box-sizing: border-box; text-align: right;" />
+    </div>
+    <div style="flex: 1;">
+      <label for="paymentType">Payment Type</label>
+      <select id="paymentType" required style="width: 80%;" onchange="showDeliveryFields()">
+         <option value="">-- Select Payment Type --</option>
+         <option value="CASH">CASH</option>
+         <option value="CARD">CARD</option>
+         <option value="UPI">UPI</option>
+         <option value="FT">FT</option>
+         <option value="BUSINESS CREDIT">BUSINESS CREDIT</option>
+      </select>
+    </div>
+  </div>
+  
+  <label id="address-label" class="hidden">Delivery Address</label>
+  <textarea id="address" rows="3" maxlength="200" style="width: 100%; resize: vertical; margin-bottom: 10px;" class="hidden"></textarea>
+  
+  <label id="mobile-label" class="hidden">Conatct Number</label>
+  <input type="tel" id="mobilenumber" maxlength="10" pattern="[0-9]{10}" class="hidden"/>
+
+  <!-- Submit + Cancel in one row -->
+  <div style="display: flex; justify-content: space-between; gap: 10px;">
+    <button 
+      onclick="orderApi()" 
+      style="flex: 1; background: none; border: 1px solid #007bff; color: #007bff; border-radius: 4px; padding: 8px; cursor: pointer;">
+      🛒 Submit Order
+    </button>
+    <button 
+      onclick="showSection('orders')" 
+      style="flex: 1; background: none; border: 1px solid #dc3545; color: #dc3545; border-radius: 4px; padding: 8px; cursor: pointer;">
+      ❌ Cancel
+    </button>
+  </div>
+</div>
+
+<!-- Profile Form -->
+<div id="profile" class="section" style="max-width: 400px; margin: auto;">
+  <h3>👤 Update Profile</h3>
+  
+  <label>EmailId</label>
+  <input type="email" id="profile-email" placeholder="Email" />
+
+  <label>First Name</label>
+  <input type="text" id="profile-firstName" maxlength="50" />
+
+  <label>Last Name</label>
+  <input type="text" id="profile-lastName" maxlength="50" />
+  
+  <label>Mobile Number</label>
+  <input type="tel" id="profile-mobile" maxlength="10" pattern="[0-9]{10}" />
+
+  <label>Address</label>
+  <textarea id="profile-address" rows="3" maxlength="200" style="width: 100%; resize: vertical; margin-bottom: 10px;"></textarea>
+
+  <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 10px;">
+    <button onclick="updateProfile()" 
+      style="flex: 1; background: none; border: 1px solid #007bff; color: #007bff; border-radius: 4px; padding: 8px;">
+      💾 Save
+    </button>
+    <button onclick="showSection('orders')" 
+      style="flex: 1; background: none; border: 1px solid #dc3545; color: #dc3545; border-radius: 4px; padding: 8px;">
+      ❌ Cancel
+    </button>
+  </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="timelineModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+     background: rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#fff; padding:20px; border-radius:8px; width:90%; max-width:500px; max-height:80%; overflow-y:auto; position:relative;">
+    <span style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:24px;" onclick="closeTimelinePopup()">×</span>
+    <h2 style="text-align:center; margin-bottom:20px;">Order Timeline</h2>
+    <div id="popupTimeline"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'http://localhost:3000/api';
+  const excludeFields = ['passwordHash', 'resetToken', 'userId', 'recordId'];
+const data = { users: [], history: [], orders: [] };
+
+function showMessage(msg, error=false){
+  const el=document.getElementById('message');
+  el.textContent=msg;
+  el.className='message '+(error?'error':'success');
+}
+
+function clearMessage(){ showMessage(''); }
+
+function showForm(formId){
+  document.querySelectorAll('#auth-forms > div, #order-form').forEach(div=>{
+    div.classList.add('hidden');
+  });
+  const formEl=document.getElementById(formId);
+  if(formEl) formEl.classList.remove('hidden');
+  clearMessage();
+}
+
+async function showSection(sectionId){
+  document.querySelectorAll('.section, #order-form').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('#auth-forms > div').forEach(div => div.classList.add('hidden'));
+  clearMessage();
+
+  if(sectionId === 'users'){ 
+    document.getElementById('users').style.display = 'block';
+    fetchData('users','/auth/getAllUsers'); 
+  } else if(sectionId === 'history'){ 
+    document.getElementById('history').style.display = 'block';
+    fetchData('history','/history/all'); 
+  } else if(sectionId === 'orders'){ 
+    document.getElementById('orders').style.display = 'block';
+    const userId = localStorage.getItem('userId');
+    if(!userId){ showForm('login-form'); return; }
+    fetchData('orders',`/order/byUserId/${encodeURIComponent(userId)}`);
+  } else if(sectionId === 'order-form'){ 
+    clearOrderForm();
+	document.getElementById('order-form').style.display = 'block';
+	loadProfileForOrder();
+  } else if (sectionId === 'profile') {
+    document.getElementById('profile').style.display = 'block';
+    loadProfile();
+  }
+}
+
+function clearOrderForm() {  
+  const qtySelect = document.getElementById("quantity");
+  const freeQtyInput = document.getElementById("freeQuantity");
+  const amountField = document.getElementById("amount");
+  const paymentType = document.getElementById("paymentType");
+  const mobile = document.getElementById('mobilenumber');
+  const address = document.getElementById('address');
+
+  if(!qtySelect || !freeQtyInput || !amountField || !paymentType || !mobile || !address) return;
+
+  qtySelect.value = "";
+  freeQtyInput.value = "";
+  freeQtyInput.style.display = "none";
+  freeQtyInput.required = false;
+  amountField.value = "";
+  paymentType.value = "";
+  mobile.value = "";
+  address.value = "";
+
+  // Hide mobile & address fields initially
+  mobile.classList.add('hidden');
+  document.getElementById('mobile-label').classList.add('hidden');
+  address.classList.add('hidden');
+  document.getElementById('address-label').classList.add('hidden');
+}
+
+function showDeliveryFields(){
+  const payment = document.getElementById('paymentType').value;
+  const mobile = document.getElementById('mobilenumber');
+  const address = document.getElementById('address');
+
+  if(payment){ 
+    mobile.classList.remove('hidden');
+    document.getElementById('mobile-label').classList.remove('hidden');
+    address.classList.remove('hidden');
+    document.getElementById('address-label').classList.remove('hidden');
+
+    // Clear the fields before filling profile
+    mobile.value = "";
+    address.value = "";
+
+    loadProfileForOrder(); // optionally fill profile info
+  } else {
+    mobile.classList.add('hidden');
+    document.getElementById('mobile-label').classList.add('hidden');
+    address.classList.add('hidden');
+    document.getElementById('address-label').classList.add('hidden');
+
+    // Also clear values
+    mobile.value = "";
+    address.value = "";
+  }
+}
+
+async function loadProfileForOrder(){
+  const userId = localStorage.getItem('userId');
+  if(!userId) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/getUserById/${encodeURIComponent(userId)}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const result = await res.json();
+    if(res.ok && result.data){
+      // ✅ Fill fields with profile values
+      document.getElementById('mobilenumber').value = result.data.mobileNumber || "";
+      document.getElementById('address').value = result.data.address || "";
+    }
+  } catch(err){
+    console.warn("Profile load failed:", err.message);
+  }
+}
+
+async function signup(){
+  const email=document.getElementById('signup-email').value.trim();
+  const password=document.getElementById('signup-password').value.trim();
+  if(!email||!password) return showMessage('Email and password required.',true);
+  try{
+    const res=await fetch(`${API_BASE}/auth/signup`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({emailId:email,password,role:'CUSTOMER'})
+    });
+    const result=await res.json();
+    if(!res.ok) throw new Error(result.message||'Signup failed.');
+    alert('✅ Signup successful! Please login.');
+    showForm('login-form');
+  } catch(err){ 
+    showMessage(`❌ Signup error: ${err.message}`,true); 
+  }
+}
+
+async function login(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value.trim();
+  if(!email||!password) return showMessage('All fields are required.',true);
+  try{
+    const res=await fetch(`${API_BASE}/auth/login`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({emailId:email,password})
+    });
+    const result=await res.json();
+    if(!res.ok) throw new Error(result.message||'Login failed.');
+	if( result.role !== 'CUSTOMER' ){
+	    alert('❌ Login with Customer User');
+        document.getElementById('auth-forms').classList.remove('hidden');
+        document.getElementById('user-section').classList.add('hidden');
+	    document.getElementById('password').value = '';
+		document.getElementById('profile-mobile').value = '';
+		document.getElementById('profile-address').value = '';
+	    localStorage.clear(); 
+	    showForm('login-form');
+	  } else {
+		localStorage.setItem('token',result.token);
+		localStorage.setItem('userId',result.userId);
+		localStorage.setItem('role',result.role);
+		localStorage.setItem('email',email);
+		showLoggedInView();
+	  }
+  }catch(err){ showMessage(`❌ Login error: ${err.message}`,true); }
+}
+
+async function logout(){
+  const userId=localStorage.getItem('userId');
+  try{
+    if(userId){
+      await fetch(`${API_BASE}/auth/logout/${encodeURIComponent(userId)}`,{
+        method:'PUT',headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}
+      });
+    }
+  }catch(e){ console.warn('Logout request failed.'); }
+  finally{
+    localStorage.clear();
+    document.getElementById('auth-forms').classList.remove('hidden');
+    document.getElementById('user-section').classList.add('hidden');
+	document.getElementById('password').value = '';
+	document.getElementById('profile-mobile').value = '';
+	document.getElementById('profile-address').value = '';
+    showMessage('You have logged out.');
+    showForm('login-form');
+  }
+}
+
+function showLoggedInView(){
+  document.getElementById('auth-forms').classList.add('hidden');
+  document.getElementById('user-section').classList.remove('hidden');
+  showMessage('✅ Logged in successfully');
+  showSection('orders');
+}
+
+function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+// ------------------- RENDER TABLE -------------------
+function renderTable(sectionId) {
+    const sectionData = data[sectionId];
+    const header = document.getElementById(`tableHeader${capitalize(sectionId)}`);
+    const body = document.getElementById(`tableBody${capitalize(sectionId)}`);
+
+    header.innerHTML = '';
+    body.innerHTML = '';
+
+    if (!sectionData || sectionData.length === 0) {
+        showMessage(`No data found for ${capitalize(sectionId)}`, true);
+        return;
+    }
+
+    const keys = Object.keys(sectionData[0]).filter(k => !excludeFields.includes(k));
+
+    // Add Action column header only for orders
+    const hasActionColumn = sectionId === 'orders';
+    if (hasActionColumn) {
+        const thAction = document.createElement('th');
+        thAction.textContent = 'Action';
+        thAction.style.width = '60px'; // optional fixed width
+        thAction.style.textAlign = 'center';
+        header.appendChild(thAction);
+    }
+
+    // Add other headers
+    keys.forEach(key => {
+        const th = document.createElement('th');
+        th.textContent = key;
+        header.appendChild(th);
+    });
+
+    // Add table rows
+    sectionData.forEach(row => {
+        const tr = document.createElement('tr');
+
+        // Action column for orders
+        if (hasActionColumn) {
+            const tdAction = document.createElement('td');
+            tdAction.style.textAlign = 'center';
+            const status = (row.status || 'NEW').toUpperCase();
+            const orderId = row.orderId || row._id;
+
+            // Show status in colored format (optional)
+            tdAction.innerHTML = formatCell(row, 'status');
+
+            // Add eye button if status != NEW
+            if (status !== 'NEW') {
+                tdAction.innerHTML += `
+                    <button class="order-btn btn-journey" title="View Journey" onclick="getOrderSummary('${orderId}')">👁️</button>
+                `;
+            }
+
+            tr.appendChild(tdAction);
+        }
+
+        // Other columns
+        keys.forEach(key => {
+            // Skip status if already added in action column
+            if (hasActionColumn && key === 'status') return;
+
+            const td = document.createElement('td');
+            td.innerHTML = formatCell(row, key);
+            tr.appendChild(td);
+        });
+
+        body.appendChild(tr);
+    });
+}
+
+// ------------------- FORMAT CELL -------------------
+function formatCell(row, key) {
+    const value = row[key];
+
+    // STATUS field coloring
+    if (key === 'status') {
+        let display = '';
+        let color = 'black';
+
+        if (typeof value === 'boolean') {
+            display = value ? 'ACTIVE' : 'IN-ACTIVE';
+            color = value ? 'green' : 'red';
+        } else if (typeof value === 'string') {
+            const status = value.toUpperCase();
+            display = status;
+            switch (status) {
+                case 'DELIVERED': color = 'green'; break;
+                case 'CANCELED': color = 'red'; break;
+                case 'CONFIRMED': color = 'blue'; break;
+                case 'OUT FOR DELIVERY': color = 'orange'; break;
+                case 'NEW': color = 'purple'; break;
+                default: color = 'black';
+            }
+        } else {
+            display = value;
+        }
+
+        return `<span style="color: ${color}; font-weight: bold;">${display}</span>`;
+    }
+
+    // Other boolean fields
+    const booleanKeys = [ 'firstUse', 'logIn', 'status'];
+    if (booleanKeys.includes(key)) {
+        return value ? `<span style="color: green; font-weight: bold;">Yes</span>` 
+                     : `<span style="color: red; font-weight: bold;">No</span>`;
+    }
+
+    return value ?? '';
+}
+
+// ------------------- FILTER TABLE WITH HIGHLIGHT -------------------
+function filterTable(sectionId) {
+    const input = document.getElementById(`searchInput${capitalize(sectionId)}`).value.toLowerCase();
+    const rows = document.querySelectorAll(`#tableBody${capitalize(sectionId)} tr`);
+
+    rows.forEach(row => {
+        let rowMatches = false;
+
+        row.querySelectorAll('td').forEach(td => {
+            const text = td.textContent.toLowerCase();
+            if (input && text.includes(input)) {
+                rowMatches = true;
+
+                // Highlight matching text
+                const regex = new RegExp(`(${input})`, 'gi');
+                td.innerHTML = td.textContent.replace(regex, '<mark>$1</mark>');
+            } else {
+                // Remove previous highlights if not matching
+                td.innerHTML = td.textContent;
+            }
+        });
+
+        row.style.display = rowMatches || !input ? '' : 'none';
+    });
+}
+
+async function fetchData(sectionId,endpoint){
+  try{
+    showMessage(`Loading ${capitalize(sectionId)}...`);
+    const res=await fetch(`${API_BASE}${endpoint}`,{headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}});
+    const result=await res.json();
+    if(res.status===401){ 
+      localStorage.clear();
+      document.getElementById('auth-forms').classList.remove('hidden');
+      document.getElementById('user-section').classList.add('hidden');
+	  document.getElementById('password').value = '';
+	  alert('Token Expired'); 
+	  showForm('login-form'); 
+	  return; 
+	} else if(res.status===404) showMessage(`❌ ${result.message}`,true);
+    else if(!res.ok) throw new Error(result.message||'API error');
+    data[sectionId]=Array.isArray(result.data)?result.data:[];
+    renderTable(sectionId); clearMessage();
+  }catch(err){ showMessage(`❌ Error loading ${sectionId}: ${err.message}`,true); }
+}
+
+function filterTable(sectionId){
+  const input=document.getElementById(`searchInput${capitalize(sectionId)}`).value.toLowerCase();
+  document.querySelectorAll(`#tableBody${capitalize(sectionId)} tr`).forEach(row=>{
+    row.style.display=row.textContent.toLowerCase().includes(input)?'':'none';
+  });
+}
+
+function exportToExcel(sectionId){
+  const wb=XLSX.utils.book_new();
+  const cleanData=data[sectionId].map(obj=>{
+    const copy={}; for(const k in obj) if(!excludeFields.includes(k)) copy[k]=obj[k];
+    return copy;
+  });
+  const ws=XLSX.utils.json_to_sheet(cleanData);
+  XLSX.utils.book_append_sheet(wb,ws,capitalize(sectionId));
+  XLSX.writeFile(wb,`${sectionId}.xlsx`);
+}
+
+function exportToCSV(sectionId){
+  const cleanData=data[sectionId].map(obj=>{
+    const copy={}; for(const k in obj) if(!excludeFields.includes(k)) copy[k]=obj[k];
+    return copy;
+  });
+  const ws=XLSX.utils.json_to_sheet(cleanData);
+  const csv=XLSX.utils.sheet_to_csv(ws);
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${sectionId}.csv`; a.click();
+}
+
+function exportToPDF(sectionId){
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF();
+  const keys=Object.keys(data[sectionId][0]||{}).filter(k=>!excludeFields.includes(k));
+  const tableData=data[sectionId].map(obj=>keys.map(k=>obj[k]));
+  doc.autoTable({head:[keys],body:tableData});
+  doc.save(`${sectionId}.pdf`);
+}
+
+async function forgotPassword(){
+  const emailId=document.getElementById("forgot-email").value.trim();
+  if(!emailId) return showMessage("❌ Please enter your email",true);
+  try{
+    showMessage("Sending reset request...");
+    const res=await fetch(`${API_BASE}/auth/forgot`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({emailId})});
+    const result=await res.json();
+    if(!res.ok) throw new Error(result.message||"API error");
+    showMessage("✅ Reset token sent to your email");
+    document.getElementById("reset-email").value=emailId;
+    showForm("reset-form");
+  }catch(err){ showMessage(`❌ ${err.message}`,true); }
+}
+
+async function resetPassword(){
+  const tokenVal=document.getElementById('reset-token').value.trim();
+  const password=document.getElementById('reset-password').value.trim();
+  const resetEmail=document.getElementById('reset-email').value.trim();
+  if(!resetEmail||!tokenVal||!password) return showMessage('All fields are required.',true);
+  try{
+    const res=await fetch(`${API_BASE}/auth/reset`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({emailId:resetEmail,newPassword:password,token:tokenVal})
+    });
+    const result=await res.json();
+    if(!res.ok) throw new Error(result.message||'Reset failed');
+    alert('✅ Password reset successful');
+    document.getElementById('reset-email').value=""; document.getElementById('reset-token').value=""; document.getElementById('reset-password').value="";
+    localStorage.clear(); showForm('login-form');
+  }catch(err){ showMessage(`❌ Reset error: ${err.message}`,true); }
+}
+
+function updateAmount() {
+  const priceMap = {
+    "100mL": 5,
+    "250mL": 15,
+    "500mL": 25,
+    "1L": 45,
+    "2L": 90,
+    "3L": 135,
+    "5L": 225
+  };
+
+  const qtySelect = document.getElementById("quantity");
+  const freeQtyInput = document.getElementById("freeQuantity");
+  const amountField = document.getElementById("amount");
+
+  if (!qtySelect || !freeQtyInput || !amountField) return;
+
+  if (qtySelect.value === "FREE") {
+    freeQtyInput.style.display = "block";
+    freeQtyInput.required = true; // only required when visible
+    const enteredQty = parseFloat(freeQtyInput.value);
+    amountField.value = (!isNaN(enteredQty) && enteredQty > 0) ? (enteredQty * 45) : "";
+  } else {
+    freeQtyInput.style.display = "none";
+    freeQtyInput.required = false; // remove requirement
+    freeQtyInput.value = ""; // clear previous input
+    amountField.value = priceMap[qtySelect.value] || "";
+  }
+}
+
+function resetOrderForm() {
+  const qtySelect = document.getElementById("quantity");
+  const freeQtyInput = document.getElementById("freeQuantity");
+  const amountField = document.getElementById("amount");
+
+  if (!qtySelect || !freeQtyInput || !amountField) return;
+
+  // Reset all fields
+  qtySelect.value = "";
+  freeQtyInput.value = "";
+  freeQtyInput.style.display = "none";
+  freeQtyInput.required = false;
+  amountField.value = "";
+}
+
+async function orderApi() {
+  const userId = localStorage.getItem('userId');
+  const emailId = localStorage.getItem('email');
+  let quantity = document.getElementById('quantity').value.trim();
+  const amount = document.getElementById('amount').value.trim();
+  const paymentType = document.getElementById('paymentType').value.trim();
+
+  // Take from input fields, fallback to saved profile
+  const mobileNumber = document.getElementById('mobilenumber').value.trim() || localStorage.getItem('mobileNumber');
+  const address = document.getElementById('address').value.trim() || localStorage.getItem('address');
+
+  if (!userId || !emailId || !quantity || !amount || !paymentType || !mobileNumber || !address) {
+    return showMessage('⚠️ All fields are required.', true);
+  }
+
+  if (quantity === 'FREE') {
+    const freeQuantity = document.getElementById('freeQuantity').value.trim();
+    if (!freeQuantity || isNaN(freeQuantity) || Number(freeQuantity) <= 0) {
+      return showMessage('⚠️ freeQuantity field is required.', true);
+    }
+    quantity = freeQuantity + 'L';
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/order/new`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ 
+        emailId, 
+        userId, 
+        quantity, 
+        price: amount, 
+        paymentType, 
+        mobileNumber, 
+        address 
+      })
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || 'Order failed');
+
+    alert('✅ Order placed successfully!');
+
+    // Clear order-specific fields (but keep profile info for next order)
+    clearOrderForm();
+
+    showSection('orders'); // back to orders
+    fetchData('orders', `/order/byUserId/${encodeURIComponent(userId)}`);
+
+  } catch (err) {
+    showMessage(`❌ Order error: ${err.message}`, true);
+  }
+}
+
+async function loadProfile() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return showForm('login-form');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/getUserById/${encodeURIComponent(userId)}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || "Failed to fetch profile");
+
+    const user = result.data;
+    document.getElementById('profile-email').value = user.emailId || '';
+    document.getElementById('profile-firstName').value = user.firstName || '';
+    document.getElementById('profile-lastName').value = user.lastName || '';
+    document.getElementById('profile-mobile').value = user.mobileNumber || '';
+    document.getElementById('profile-address').value = user.address || '';
+
+  } catch (err) {
+    showMessage(`❌ Error loading profile: ${err.message}`, true);
+  }
+}
+
+async function updateProfile() {
+  const userId = localStorage.getItem('userId');
+  const userEmailId = localStorage.getItem('email');
+  const emailId = document.getElementById('profile-email').value.trim();
+  const firstName = document.getElementById('profile-firstName').value.trim();
+  const lastName = document.getElementById('profile-lastName').value.trim();
+  const mobileNumber = document.getElementById('profile-mobile').value.trim();
+  const address = document.getElementById('profile-address').value.trim();
+
+  if (!userId || !emailId) return showMessage('⚠️ Missing user info.', true);
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/updateUser`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ userId, emailId, firstName, lastName, mobileNumber, address })
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || "Update failed");
+
+    alert('✅ Profile updated successfully!');
+    showSection('orders');
+	
+	if(emailId !== userEmailId){
+	  alert('✅ EmailId updated, Please login again');
+      document.getElementById('auth-forms').classList.remove('hidden');
+      document.getElementById('user-section').classList.add('hidden');
+	  document.getElementById('password').value = '';
+	  document.getElementById('profile-mobile').value = '';
+	  document.getElementById('profile-address').value = '';
+	  localStorage.clear(); 
+	  showForm('login-form');
+	}
+  } catch (err) {
+    showMessage(`❌ Profile update error: ${err.message}`, true);
+  }
+}
+
+async function getOrderSummary(orderId) {
+  if (!orderId) {
+    showMessage('⚠️ Missing orderId', true);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/history/byOrderId/${encodeURIComponent(orderId)}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || "Failed to get summary");
+
+    const respData = result.data;
+
+    // Ensure we pass the journey array to renderTimeline
+    if (respData && Array.isArray(respData)) {
+      openTimelinePopup(respData);
+    } else {
+      openTimelinePopup([]); // empty if no journey
+    }
+
+  } catch (err) {
+    showMessage(`❌ Summary failed: ${err.message}`, true);
+  }
+}
+
+  function openTimelinePopup(timelineData) {
+    // Sort the data chronologically
+    const sortedData = timelineData.slice().sort((a, b) => new Date(a.actionOn) - new Date(b.actionOn));
+
+    document.getElementById('timelineModal').style.display = 'flex';
+    renderTimeline(sortedData, 'popupTimeline');
+  }
+
+  function closeTimelinePopup() {
+    document.getElementById('timelineModal').style.display = 'none';
+    document.getElementById('popupTimeline').innerHTML = '';
+  }
+
+  function renderTimeline(data, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    data.forEach((step, index) => {
+      let color;
+      switch(step.status) {
+        case 'DELIVERED': color = 'green'; break;
+        case 'CANCELED': color = 'red'; break;
+        case 'CONFIRMED': color = 'blue'; break;
+        case 'OUT FOR DELIVERY': color = 'orange'; break;
+        case 'NEW': color = 'purple'; break;
+        default: color = 'black';
+      }
+
+      const isLatest = index === data.length - 1; // Highlight latest
+      const item = document.createElement('div');
+      item.style.display = 'flex';
+      item.style.alignItems = 'flex-start';
+      item.style.marginBottom = '25px';
+      item.style.position = 'relative';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-20px)';
+      item.style.transition = 'all 0.5s ease';
+
+      item.innerHTML = `
+        <div style="flex-shrink:0; position:relative; width:25px; display:flex; justify-content:center;">
+          <div style="
+            background:${color};
+            width:${isLatest ? '18px' : '12px'};
+            height:${isLatest ? '18px' : '12px'};
+            border-radius:50%;
+            margin-top:3px;"></div>
+          ${index < data.length - 1 ? `<div style="position:absolute; top:18px; left:50%; transform:translateX(-50%); width:2px; height:calc(100% - 18px); background:#ccc;"></div>` : ''}
+        </div>
+        <div style="margin-left:12px; word-wrap: break-word; flex:1;">
+          <div style="font-weight:bold; color:${color}; margin-bottom:2px; font-size:1em;">${step.status}</div>
+          <div style="font-size:0.85em; color:#555;">${step.actionOn}</div>
+        </div>
+      `;
+
+      container.appendChild(item);
+
+      setTimeout(() => { 
+        item.style.opacity = '1'; 
+        item.style.transform = 'translateX(0)'; 
+      }, index * 200);
+    });
+  }
+
+  // Optional: Close modal when clicking outside content
+  document.getElementById('timelineModal').addEventListener('click', function(e) {
+    if (e.target === this) closeTimelinePopup();
+  });
+</script>
+</body>
+</html>
